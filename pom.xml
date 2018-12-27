@@ -14,7 +14,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.shade.plugin.version>3.1.0</maven.shade.plugin.version>
-        <hive.version>1.2.1</hive.version>
+        <hive.version>1.2.2</hive.version>
         <hadoop.version>2.6.0</hadoop.version>
         <junit.version>4.11</junit.version>
     </properties>
