@@ -31,7 +31,7 @@ public class ClickhouseOutputFormat implements HiveOutputFormat<NullWritable, Wr
 
     @Override
     public RecordWriter<NullWritable, Writable> getRecordWriter(FileSystem fileSystem, JobConf jobConf, String name, Progressable progressable) throws IOException {
-        throw new RuntimeException("this is not suppose to be here");
+        throw new UnsupportedOperationException("hadoop write operations are not allowed.");
     }
 
     @Override

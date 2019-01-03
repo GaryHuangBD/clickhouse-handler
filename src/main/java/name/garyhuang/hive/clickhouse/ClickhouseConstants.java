@@ -20,7 +20,7 @@ public class ClickhouseConstants {
 
     public final static String DEFAULT_CLICKHOUSE_WRITE_SIZE = "1000";
 
-    public final static String DEFAULT_CLICKHOUSE_FLUSH_TIMEOUT = "5000";
+    public final static String DEFAULT_CLICKHOUSE_FLUSH_TIMEOUT = "1000";
 
     public final static String DEFAULT_CLICKHOUSE_IGNORE_ERROR = "true";
 

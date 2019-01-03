@@ -27,6 +27,18 @@
             <version>1.6-stable</version>
         </dependency>
 
+        <!--<dependency>-->
+            <!--<groupId>ru.yandex.clickhouse</groupId>-->
+            <!--<artifactId>clickhouse-jdbc</artifactId>-->
+            <!--<version>0.1.48</version>-->
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.slf4j</groupId>-->
+                    <!--<artifactId>slf4j-api</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        <!--</dependency>-->
+
         <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-exec</artifactId>
@@ -44,6 +56,7 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>${hadoop.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -55,6 +68,7 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>${hadoop.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

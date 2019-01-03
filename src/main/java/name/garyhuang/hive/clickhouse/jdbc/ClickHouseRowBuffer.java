@@ -12,7 +12,7 @@ import java.util.Map;
  **/
 public class ClickHouseRowBuffer {
 
-    private final int size;
+    private final int flushSize;
 
     private final long bufferTimeoutMS;
 
@@ -22,7 +22,7 @@ public class ClickHouseRowBuffer {
 
     public ClickHouseRowBuffer(int size, long bufferTimeoutMS) {
         this.lastTime = System.currentTimeMillis();
-        this.size = size;
+        this.flushSize = size;
         this.bufferTimeoutMS = bufferTimeoutMS;
         this.rows = Lists.newArrayListWithCapacity(size);
     }
@@ -46,7 +46,7 @@ public class ClickHouseRowBuffer {
 
     public boolean shouldFlush() {
         long now = System.currentTimeMillis();
-        return rows.size() >= size || lastTime + bufferTimeoutMS >= now;
+        return rows.size() >= flushSize || lastTime + bufferTimeoutMS >= now;
     }
 
     public String genInertSql(String table) {

@@ -33,16 +33,21 @@ public class JdbcWriterTest {
 
     private JdbcWriter writer;
 
+    private Properties properties;
+
     @Before
     public void setUp() throws Exception {
         JobConf conf = new JobConf();
         conf.set(CLICKHOUSE_SERVERS, "127.0.0.1:9000");
         conf.set(CLICKHOUSE_DB, "default");
-        conf.set(CLICKHOUSE_TABLE, "default");
+        conf.set(CLICKHOUSE_TABLE, "test1");
         conf.set(CLICKHOUSE_USER, "default");
-        conf.set(CLICKHOUSE_PASSWORD, "default");
-        writer = new JdbcWriter(conf, "11", null);
+        conf.set(CLICKHOUSE_PASSWORD, "IARYxRcr");
+        conf.set(CLICKHOUSE_WRITE_SIZE, "2");
+
         HiveTableSchema.init(createProperties());
+        writer = new JdbcWriter(conf, "11", null);
+
         List<Text> columnTextNames = columnNames.stream().map(c -> new Text(c)).collect(Collectors.toList());
         RECORDS = IntStream
                 .range(0, RECORD_NUMBER)
@@ -66,13 +71,13 @@ public class JdbcWriterTest {
                     );
                     return writable;
                 }).collect(Collectors.toList());
-        ClickhouseWritable writable = new ClickhouseWritable();
-        writable.put(
-                columnTextNames.get(2),
-                PrimitiveObjectInspectorFactory.javaStringObjectInspector
-                        .getPrimitiveWritableObject("test")
-        );
-        RECORDS.add(writable);
+//        ClickhouseWritable writable = new ClickhouseWritable();
+//        writable.put(
+//                columnTextNames.get(2),
+//                PrimitiveObjectInspectorFactory.javaStringObjectInspector
+//                        .getPrimitiveWritableObject("test")
+//        );
+//        RECORDS.add(writable);
     }
 
 
@@ -85,9 +90,15 @@ public class JdbcWriterTest {
                 e.printStackTrace();
             }
         });
+        try {
+            writer.close(false);
+        } catch (IOException e) {
+        }
     }
 
+
     private Properties createProperties() {
+
         Properties tbl = new Properties();
         // Set the configuration parameters
         tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");

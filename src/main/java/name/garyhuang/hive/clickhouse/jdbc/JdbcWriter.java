@@ -34,8 +34,6 @@ import static name.garyhuang.hive.clickhouse.ClickhouseConstants.*;
  **/
 public class JdbcWriter implements FileSinkOperator.RecordWriter, RecordWriter<BytesWritable, ClickhouseWritable> {
 
-    private static final Logger logger = LoggerFactory.getLogger(JdbcWriter.class);
-
     private final static String sep = ",";
 
     private final Integer batchSize;
@@ -71,7 +69,9 @@ public class JdbcWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
         random = new Random();
         try {
             String sql = genInitSQL(table);
+            System.out.println("sql: " + sql);
             String server = chooseServer(taskId, serverArray);
+            System.out.println("init clickhouse db connection, server: " + server);
             Class.forName("com.github.housepower.jdbc.ClickHouseDriver");
             String serverDB = StringUtils.remove(server, ' ') + "/" + db;
             Connection connection = DriverManager.getConnection("jdbc:clickhouse://" + serverDB, user, password);
@@ -91,11 +91,9 @@ public class JdbcWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
     private String genInitSQL(String table) {
         StringBuffer sb = new StringBuffer("insert into ").append(table)
                 .append(" (");
-        Set<String> names = HiveTableSchema.getColNames().stream()
-                .map(col-> col.toString())
-                .collect(Collectors.toSet());
+        List<String> names = HiveTableSchema.getFieldNames();
         String nameStr = StringUtils.join(names, ',');
-        sb.append(nameStr).append(")  valuse (");
+        sb.append(nameStr).append(")  values (");
         for (int i =0; i < names.size(); i++) {
             sb.append(" ?,");
         }
@@ -118,38 +116,43 @@ public class JdbcWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
         buffer.add(map);
 
         try {
-            send();
+            if (buffer.shouldFlush()) {
+                send();
+            }
         } catch (SQLException e) {
-            if (isIgnoreError) {
-                logger.warn("error when sending data to clickhouse", e);
-            } else {
+            System.out.println("Error when sending data to clickhouse" + e.getMessage());
+            if (!isIgnoreError) {
                 throw new IOException(e);
             }
         }
     }
 
     public void send() throws SQLException {
-        if (buffer.shouldFlush()) {
-            pstmt.clearParameters();
-            List<String> fieldNames = HiveTableSchema.getFieldNames();
-            for (int i = 0; i < buffer.currentSize(); i++) {
-                Map<String, Object> kvMap = buffer.get(i);
-                for (int j = 0; j < fieldNames.size(); j++) {
-                    String name = fieldNames.get(i);
-                    pstmt.setObject(j, kvMap.get(name));
-                }
-                pstmt.addBatch();
+        System.out.println("write to clickhouse");
+        List<String> fieldNames = HiveTableSchema.getFieldNames();
+        pstmt.clearBatch();
+        for (int i = 0; i < buffer.currentSize(); i++) {
+            Map<String, Object> kvMap = buffer.get(i);
+            for (int j = 0; j < fieldNames.size(); j++) {
+                String name = fieldNames.get(j);
+                pstmt.setObject(j + 1, kvMap.get(name));
             }
-            pstmt.executeBatch();
+            pstmt.addBatch();
         }
+        pstmt.executeBatch();
+        buffer.clear();
     }
 
     @Override
     public void close(boolean abort) throws IOException {
         try {
+            if (buffer.currentSize() > 0) {
+                send();
+            }
             pstmt.getConnection().close();
         } catch (SQLException e) {
-            logger.warn("clickhouse connect close error", e);
+            System.out.println("Clickhouse connect close error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
